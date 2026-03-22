@@ -5,8 +5,19 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anticoagulant Hub</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=IBM+Plex+Sans+Thai:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+(function () {
+  try {
+    var th = localStorage.getItem('coagulant-theme');
+    if (th === 'light' || th === 'dark') document.documentElement.setAttribute('data-theme', th);
+    var sc = localStorage.getItem('coagulant-text-scale');
+    if (sc) document.documentElement.style.setProperty('--text-scale', sc);
+  } catch (e) {}
+})();
+</script>
 <style>
   :root {
+    --text-scale: 1;
     --ink: #0d1117;
     --paper: #f5f0e8;
     --cream: #ede8dc;
@@ -14,6 +25,28 @@
     --red-dark: #7f1d1d;
     --gold: #c9a84c;
     --muted: #6b6256;
+    --card-desc: #8a7e72;
+    --toolbar-bg: rgba(255,255,255,0.06);
+    --toolbar-border: rgba(255,255,255,0.12);
+    --toolbar-text: var(--paper);
+    --toolbar-muted: var(--muted);
+  }
+
+  html {
+    font-size: calc(16px * var(--text-scale));
+  }
+
+  [data-theme="light"] {
+    --ink: #f2ede5;
+    --paper: #1c1814;
+    --cream: #e5dfd4;
+    --muted: #5c5349;
+    --gold: #7a5c1a;
+    --card-desc: #5c5349;
+    --toolbar-bg: rgba(0,0,0,0.06);
+    --toolbar-border: rgba(0,0,0,0.1);
+    --toolbar-text: var(--paper);
+    --toolbar-muted: var(--muted);
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,6 +73,12 @@
     pointer-events: none;
   }
 
+  [data-theme="light"] body::before {
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(185,28,28,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 20%, rgba(201,168,76,0.08) 0%, transparent 60%);
+  }
+
   /* Grid lines */
   body::after {
     content: '';
@@ -51,10 +90,94 @@
     pointer-events: none;
   }
 
+  [data-theme="light"] body::after {
+    background-image:
+      linear-gradient(rgba(0,0,0,0.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,0.04) 1px, transparent 1px);
+  }
+
+  /* Toolbar */
+  .toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 14px;
+    pointer-events: none;
+  }
+
+  .toolbar-inner {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    pointer-events: auto;
+    max-width: min(520px, 94vw);
+    margin-left: auto;
+  }
+
+  .toolbar-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: var(--toolbar-bg);
+    border: 1px solid var(--toolbar-border);
+    backdrop-filter: blur(8px);
+  }
+
+  .btn-tool {
+    font-family: 'IBM Plex Sans Thai', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--toolbar-border);
+    background: transparent;
+    color: var(--toolbar-text);
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .btn-tool:hover:not(:disabled) {
+    background: rgba(201,168,76,0.12);
+    border-color: rgba(201,168,76,0.35);
+  }
+
+  .btn-tool:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .btn-tool.icon-only {
+    min-width: 2.25rem;
+    padding-left: 8px;
+    padding-right: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+  }
+
+  .font-scale-label {
+    font-size: 0.6875rem;
+    min-width: 2.75rem;
+    text-align: center;
+    color: var(--toolbar-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
   .container {
     width: min(520px, 94vw);
     position: relative;
     z-index: 1;
+    padding-top: 52px;
   }
 
   /* Header */
@@ -65,7 +188,7 @@
   }
 
   .eyebrow {
-    font-size: 10px;
+    font-size: 0.625rem;
     letter-spacing: 0.3em;
     text-transform: uppercase;
     color: var(--gold);
@@ -85,7 +208,7 @@
 
   .title {
     font-family: 'Playfair Display', serif;
-    font-size: clamp(32px, 7vw, 48px);
+    font-size: clamp(2rem, 7vw, 3rem);
     color: var(--paper);
     line-height: 1.1;
     letter-spacing: -0.02em;
@@ -97,14 +220,14 @@
 
   .subtitle {
     margin-top: 12px;
-    font-size: 13px;
+    font-size: 0.8125rem;
     color: var(--muted);
     letter-spacing: 0.05em;
   }
 
   /* Icon: blood drop SVG */
   .drop-icon {
-    width: 36px; height: 36px;
+    width: 2.25rem; height: 2.25rem;
     margin: 0 auto 20px;
     opacity: 0.9;
     animation: pulse 3s ease-in-out infinite;
@@ -169,7 +292,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: 1.375rem;
     flex-shrink: 0;
     background: var(--icon-bg, rgba(185,28,28,0.15));
     border: 1px solid var(--card-accent, rgba(185,28,28,0.3));
@@ -182,27 +305,27 @@
 
   .card-drug {
     font-family: 'Playfair Display', serif;
-    font-size: 20px;
+    font-size: 1.25rem;
     color: var(--paper);
     letter-spacing: 0.01em;
   }
 
   .card-name-th {
-    font-size: 11px;
+    font-size: 0.6875rem;
     color: var(--muted);
     margin-top: 2px;
   }
 
   .card-desc {
-    font-size: 12px;
-    color: #8a7e72;
+    font-size: 0.75rem;
+    color: var(--card-desc);
     margin-top: 6px;
     line-height: 1.4;
   }
 
   .card-arrow {
     color: var(--card-accent, var(--red));
-    font-size: 18px;
+    font-size: 1.125rem;
     opacity: 0.6;
     transition: all 0.3s ease;
     flex-shrink: 0;
@@ -222,7 +345,7 @@
   /* Tag */
   .tag {
     display: inline-block;
-    font-size: 9px;
+    font-size: 0.5625rem;
     letter-spacing: 0.12em;
     text-transform: uppercase;
     padding: 2px 8px;
@@ -238,7 +361,7 @@
   .footer {
     margin-top: 36px;
     text-align: center;
-    font-size: 11px;
+    font-size: 0.6875rem;
     color: var(--muted);
     letter-spacing: 0.05em;
     line-height: 1.6;
@@ -273,9 +396,45 @@
   }
   .corner-tl { top: 0; left: 0; border-right: 1px solid white; border-bottom: 1px solid white; }
   .corner-br { bottom: 0; right: 0; border-left: 1px solid white; border-top: 1px solid white; }
+
+  [data-theme="light"] .corner {
+    border-color: rgba(0,0,0,0.12);
+    opacity: 0.15;
+  }
+
+  [data-theme="light"] .card {
+    background: rgba(255,255,255,0.65);
+    border-color: rgba(0,0,0,0.1);
+  }
+
+  [data-theme="light"] .card:hover {
+    background: rgba(255,255,255,0.85);
+    border-color: rgba(0,0,0,0.14);
+  }
+
+  [data-theme="light"] .tag {
+    background: rgba(0,0,0,0.04);
+  }
+
+  [data-theme="light"] .drop-icon path[stroke] {
+    stroke: rgba(0,0,0,0.18);
+  }
 </style>
 </head>
 <body>
+
+<div class="toolbar" role="toolbar" aria-label="การตั้งค่าแสดงผล">
+  <div class="toolbar-inner">
+    <div class="toolbar-group">
+      <button type="button" class="btn-tool" id="themeToggle" aria-pressed="false">โหมดสว่าง</button>
+    </div>
+    <div class="toolbar-group" role="group" aria-label="ขนาดตัวอักษร">
+      <button type="button" class="btn-tool icon-only" id="fontSmaller" aria-label="ลดขนาดตัวอักษร">A−</button>
+      <span class="font-scale-label" id="fontScaleLabel" aria-live="polite">100%</span>
+      <button type="button" class="btn-tool icon-only" id="fontLarger" aria-label="เพิ่มขนาดตัวอักษร">A+</button>
+    </div>
+  </div>
+</div>
 
 <div class="corner corner-tl"></div>
 <div class="corner corner-br"></div>
@@ -346,5 +505,74 @@
   </div>
 
 </div>
+<script>
+(function () {
+  var KEY_THEME = 'coagulant-theme';
+  var KEY_SCALE = 'coagulant-text-scale';
+  var SCALE_MIN = 0.875;
+  var SCALE_MAX = 1.375;
+  var STEP = 0.125;
+
+  function getScale() {
+    var raw = getComputedStyle(document.documentElement).getPropertyValue('--text-scale').trim();
+    var n = parseFloat(raw);
+    return isNaN(n) ? 1 : n;
+  }
+
+  function setScale(v) {
+    var s = Math.min(SCALE_MAX, Math.max(SCALE_MIN, v));
+    document.documentElement.style.setProperty('--text-scale', String(s));
+    try { localStorage.setItem(KEY_SCALE, String(s)); } catch (e) {}
+    var label = document.getElementById('fontScaleLabel');
+    if (label) label.textContent = Math.round(s * 100) + '%';
+    var sm = document.getElementById('fontSmaller');
+    var lg = document.getElementById('fontLarger');
+    if (sm) sm.disabled = s <= SCALE_MIN + 0.001;
+    if (lg) lg.disabled = s >= SCALE_MAX - 0.001;
+  }
+
+  function setTheme(theme) {
+    if (theme !== 'light' && theme !== 'dark') theme = 'dark';
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem(KEY_THEME, theme); } catch (e) {}
+    var btn = document.getElementById('themeToggle');
+    if (btn) {
+      btn.textContent = theme === 'dark' ? 'โหมดสว่าง' : 'โหมดมืด';
+      btn.setAttribute('aria-pressed', theme === 'light' ? 'true' : 'false');
+    }
+  }
+
+  function initTheme() {
+    try {
+      var saved = localStorage.getItem(KEY_THEME);
+      if (saved === 'light' || saved === 'dark') {
+        setTheme(saved);
+        return;
+      }
+    } catch (e) {}
+    if (!document.documentElement.getAttribute('data-theme')) setTheme('dark');
+  }
+
+  function initScale() {
+    setScale(getScale());
+  }
+
+  initTheme();
+  initScale();
+
+  var themeBtn = document.getElementById('themeToggle');
+  if (themeBtn) {
+    themeBtn.addEventListener('click', function () {
+      var cur = document.documentElement.getAttribute('data-theme') || 'dark';
+      setTheme(cur === 'dark' ? 'light' : 'dark');
+    });
+  }
+
+  var fs = document.getElementById('fontSmaller');
+  var fl = document.getElementById('fontLarger');
+  if (fs) fs.addEventListener('click', function () { setScale(getScale() - STEP); });
+  if (fl) fl.addEventListener('click', function () { setScale(getScale() + STEP); });
+})();
+</script>
 </body>
 </html>
